@@ -1,0 +1,136 @@
+1.空域低通滤波器
+[img1,map1]=imread('test1.pgm');
+p11=medfilt2(img1,[3,3]);
+p12=medfilt2(img1,[5,5]);
+p13=medfilt2(img1,[7,7]);
+h11=fspecial('gaussian',[3,3],1);
+im11=imfilter(img1,h11,'conv');
+h12=fspecial('gaussian',[5,5],1);
+im12=imfilter(img1,h12,'conv');
+h13=fspecial('gaussian',[7,7],1);
+im13=imfilter(img1,h13,'conv');
+[img2,map2]=imread('test2.tif');
+p21=medfilt2(img2,[3,3]);
+p22=medfilt2(img2,[5,5]);
+p23=medfilt2(img2,[7,7]);
+h21=fspecial('gaussian',[3,3],1);
+im21=imfilter(img2,h21,'conv');
+h22=fspecial('gaussian',[5,5],1);
+im22=imfilter(img2,h22,'conv');
+h23=fspecial('gaussian',[7,7],1);
+im23=imfilter(img2,h23,'conv');
+figure;
+subplot(2,2,1); imshow(img1,map1);title('test1原图');
+subplot(2,2,2); imshow(p11,map1); title('中值滤波器(3*3)');
+subplot(2,2,3); imshow(p12,map1); title('中值滤波器(5*5)');
+subplot(2,2,4); imshow(p13,map1); title('中值滤波器(7*7)');
+figure;
+subplot(2,2,1); imshow(img2,map2); title('test2原图');
+subplot(2,2,2); imshow(p21,map2); title('中值滤波器(3*3)');
+subplot(2,2,3); imshow(p22,map2); title('中值滤波器(5*5)');
+subplot(2,2,4); imshow(p23,map2); title('中值滤波器(7*7)');
+figure;
+subplot(2,2,1); imshow(img1,map1);title('test1原图');
+subplot(2,2,2); imshow(im11,map1); title('高斯滤波器(3*3)');
+subplot(2,2,3); imshow(im12,map1); title('高斯滤波器(5*5)');
+subplot(2,2,4); imshow(im13,map1); title('高斯滤波器(7*7)');
+figure;
+subplot(2,2,1); imshow(img2,map2); title('test1原图');
+subplot(2,2,2); imshow(im21,map2); title('高斯滤波器(3*3)');
+subplot(2,2,3); imshow(im22,map2); title('高斯滤波器(5*5)');
+subplot(2,2,4); imshow(im23,map2); title('高斯滤波器(7*7)');
+
+
+
+2.利用固定方差 sigma=1.5产生高斯滤波器. 
+clc;clear;
+[img,map]=imread('test2.tif');
+h=fspecial('gaussian',[3 3],1.5);
+h1=fspecial('gaussian',[5 5],1.5);
+h2=fspecial('gaussian',[7 7],1.5);
+t1=imfilter(img,h,'conv');
+t2=imfilter(img,h1,'conv');
+t3=imfilter(img,h2,'conv');
+figure(1)
+subplot(221)
+imshow(img,map);
+title('原图');
+subplot(222)
+imshow(t1,map);
+title('3*3 sigma=1.5高斯滤波');
+subplot(223)
+imshow(t2,map);
+title('5*5 sigma=1.5高斯滤波');
+subplot(224)
+imshow(t3,map);
+title('7*7 sigma=1.5高斯滤波');
+
+
+
+
+3.利用高通滤波器滤波
+clc;clear;
+%unsharp 
+[img,map]=imread('test3_corrupt.pgm');
+h=fspecial('unsharp');
+t1=imfilter(img,h);
+figure(1)
+subplot(1,2,1)
+imshow(img,map);
+title('原图');
+subplot(1,2,2)
+imshow(t1,map);
+title(' unsharp');
+
+%sobel
+p=imread('test3_corrupt.pgm');
+a1=[-1,0,1;-2,0,2;-1,0,1];
+a2=[-1,-2,-1;0,0,0;1,2,1];
+gx=conv2(p,a1,'same');
+gy=conv2(p,a2,'same');
+p1=abs(gx)+abs(gy);
+p1=uint8(p1);
+figure(2)
+subplot(1,2,1);
+imshow(p);
+subplot(1,2,2);
+imshow(p1);
+title('test4 copy经Sobel edge detector的图像');
+
+
+%laplace edge
+p1=imread('test3_corrupt.pgm');%图像读入
+grayPic=mat2gray(p1);%实现图像的矩阵归一化操作
+[m,n]=size(grayPic);
+newGrayPic=grayPic;
+LaplacianNum=0;%经Laplacian操作得到的每个像素的值
+LaplacianThreshold=0.2;%设定阈值
+for j=2:m-1 %进行边界提取
+    for k=2:n-1
+        LaplacianNum=abs(4*grayPic(j,k)-grayPic(j-1,k)-grayPic(j+1,k)-grayPic(j,k+1)-grayPic(j,k-1));
+        if(LaplacianNum > LaplacianThreshold)
+            newGrayPic(j,k)=255;
+        else
+            newGrayPic(j,k)=0;
+        end
+    end
+end
+figure(3)
+subplot(1,2,1)
+imshow(img,map);
+title('原图');
+subplot(1,2,2)
+imshow(newGrayPic);
+
+title('Laplacian算子的处理结果')
+
+%canny
+i4=edge(img,'canny');
+figure(4)
+subplot(1,2,1)
+imshow(img,map);
+title('原图');
+subplot(1,2,2)
+imshow(i4);
+title('canny edge detection');
+
